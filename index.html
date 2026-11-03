@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生辰八字计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8C3130',      // 中国红
+                        secondary: '#D9A566',    // 金色
+                        accent: '#2C5F2D',       // 青色
+                        neutral: '#1F2937',      // 深灰
+                        light: '#F9FAFB',        // 浅灰
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-pattern {
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d9a566' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+            .scroll-smooth {
+                scroll-behavior: smooth;
+            }
+            .text-shadow {
+                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+        }
+    </style>
+    
+    <!-- 导入中文字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-light bg-pattern text-neutral min-h-screen font-sans">
+    <!-- 页面头部 -->
+    <header class="bg-primary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6 md:py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-serif font-bold text-shadow">生辰八字计算器</h1>
+                    <p class="text-secondary/90 mt-1">传统命理 · 四柱八字 · 精准计算</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10 transition-all-300">
+                        <i class="fa fa-moon-o text-xl"></i>
+                    </button>
+                    <button id="info-btn" class="p-2 rounded-full hover:bg-white/10 transition-all-300">
+                        <i class="fa fa-info-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        <div class="max-w-4xl mx-auto">
+            <!-- 输入区域 -->
+            <section class="bg-white rounded-xl shadow-md p-6 md:p-8 mb-10 transform hover:shadow-lg transition-all-300">
+                <h2 class="text-2xl md:text-3xl font-serif font-semibold text-primary mb-6 pb-2 border-b border-secondary/30">输入出生信息</h2>
+                
+                <form id="bazi-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 出生日期 -->
+                        <div class="space-y-2">
+                            <label for="birth-date" class="block text-neutral/80 font-medium">出生日期</label>
+                            <input type="date" id="birth-date" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all-300">
+                        </div>
+                        
+                        <!-- 出生时间 -->
+                        <div class="space-y-2">
+                            <label for="birth-time" class="block text-neutral/80 font-medium">出生时间</label>
+                            <input type="time" id="birth-time" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all-300">
+                        </div>
+                        
+                        <!-- 出生地点 -->
+                        <div class="space-y-2">
+                            <label for="birth-place" class="block text-neutral/80 font-medium">出生地点</label>
+                            <input type="text" id="birth-place" placeholder="例如：北京市"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all-300">
+                            <p class="text-sm text-neutral/60">用于精确计算真太阳时（可选）</p>
+                        </div>
+                        
+                        <!-- 性别 -->
+                        <div class="space-y-2">
+                            <label class="block text-neutral/80 font-medium">性别</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="gender" value="male" checked
+                                        class="w-4 h-4 text-primary focus:ring-primary">
+                                    <span class="ml-2">男</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="gender" value="female"
+                                        class="w-4 h-4 text-primary focus:ring-primary">
+                                    <span class="ml-2">女</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 真太阳时选项 -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="solar-time" checked
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <label for="solar-time" class="ml-2 text-neutral/80">
+                            启用真太阳时计算（根据出生地调整时间）
+                        </label>
+                    </div>
+                    
+                    <!-- 计算按钮 -->
+                    <div class="text-center pt-2">
+                        <button type="submit" 
+                            class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg shadow transition-all-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            <i class="fa fa-calculator mr-2"></i>计算生辰八字
+                        </button>
+                    </div>
+                </form>
+            </section>
+            
+            <!-- 结果区域 (默认隐藏) -->
+            <section id="result-section" class="hidden space-y-8">
+                <!-- 基本信息卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 md:p-8 transform hover:shadow-lg transition-all-300">
+                    <h2 class="text-2xl md:text-3xl font-serif font-semibold text-primary mb-6 pb-2 border-b border-secondary/30">八字结果</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-neutral/80 mb-3">出生信息</h3>
+                            <ul class="space-y-2 text-neutral/80">
+                                <li class="flex"><span class="w-24 font-medium">日期：</span> <span id="result-date">-</span></li>
+                                <li class="flex"><span class="w-24 font-medium">时间：</span> <span id="result-time">-</span></li>
+                                <li class="flex"><span class="w-24 font-medium">地点：</span> <span id="result-place">-</span></li>
+                                <li class="flex"><span class="w-24 font-medium">农历：</span> <span id="result-lunar">-</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-medium text-neutral/80 mb-3">节气信息</h3>
+                            <ul class="space-y-2 text-neutral/80">
+                                <li class="flex"><span class="w-24 font-medium">年柱节气：</span> <span id="result-year-term">-</span></li>
+                                <li class="flex"><span class="w-24 font-medium">月柱节气：</span> <span id="result-month-term">-</span></li>
+                                <li class="flex"><span class="w-24 font-medium">真太阳时：</span> <span id="result-solar-time">-</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 八字展示 -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-medium text-neutral/80 mb-4 text-center">四柱八字</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                            <!-- 年柱 -->
+                            <div class="bg-primary/5 rounded-lg p-4 text-center border border-primary/10">
+                                <div class="text-sm text-primary mb-1">年柱</div>
+                                <div id="year-pillar" class="text-2xl md:text-3xl font-serif font-bold text-primary">甲子</div>
+                                <div class="mt-2 text-sm text-neutral/70">
+                                    <span id="year-tiangan" class="mr-2">甲</span>
+                                    <span id="year-dizhi">子</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 月柱 -->
+                            <div class="bg-primary/5 rounded-lg p-4 text-center border border-primary/10">
+                                <div class="text-sm text-primary mb-1">月柱</div>
+                                <div id="month-pillar" class="text-2xl md:text-3xl font-serif font-bold text-primary">丙寅</div>
+                                <div class="mt-2 text-sm text-neutral/70">
+                                    <span id="month-tiangan" class="mr-2">丙</span>
+                                    <span id="month-dizhi">寅</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 日柱 -->
+                            <div class="bg-primary/5 rounded-lg p-4 text-center border border-primary/10">
+                                <div class="text-sm text-primary mb-1">日柱</div>
+                                <div id="day-pillar" class="text-2xl md:text-3xl font-serif font-bold text-primary">戊辰</div>
+                                <div class="mt-2 text-sm text-neutral/70">
+                                    <span id="day-tiangan" class="mr-2">戊</span>
+                                    <span id="day-dizhi">辰</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 时柱 -->
+                            <div class="bg-primary/5 rounded-lg p-4 text-center border border-primary/10">
+                                <div class="text-sm text-primary mb-1">时柱</div>
+                                <div id="hour-pillar" class="text-2xl md:text-3xl font-serif font-bold text-primary">庚申</div>
+                                <div class="mt-2 text-sm text-neutral/70">
+                                    <span id="hour-tiangan" class="mr-2">庚</span>
+                                    <span id="hour-dizhi">申</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 八字解析 -->
+                <div class="bg-white rounded-xl shadow-md p-6 md:p-8 transform hover:shadow-lg transition-all-300">
+                    <h2 class="text-2xl md:text-3xl font-serif font-semibold text-primary mb-6 pb-2 border-b border-secondary/30">八字解析</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- 五行分布 -->
+                        <div>
+                            <h3 class="text-xl font-medium text-neutral/80 mb-4">五行分布</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                <div class="bg-neutral/5 rounded-lg p-3 text-center">
+                                    <div class="text-accent font-medium">木</div>
+                                    <div class="mt-2">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="wood-percent" class="h-full bg-accent" style="width: 20%"></div>
+                                        </div>
+                                        <div id="wood-value" class="text-sm mt-1 text-neutral/70">20%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-neutral/5 rounded-lg p-3 text-center">
+                                    <div class="text-primary font-medium">火</div>
+                                    <div class="mt-2">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="fire-percent" class="h-full bg-primary" style="width: 10%"></div>
+                                        </div>
+                                        <div id="fire-value" class="text-sm mt-1 text-neutral/70">10%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-neutral/5 rounded-lg p-3 text-center">
+                                    <div class="text-yellow-700 font-medium">土</div>
+                                    <div class="mt-2">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="earth-percent" class="h-full bg-yellow-700" style="width: 30%"></div>
+                                        </div>
+                                        <div id="earth-value" class="text-sm mt-1 text-neutral/70">30%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-neutral/5 rounded-lg p-3 text-center">
+                                    <div class="text-gray-600 font-medium">金</div>
+                                    <div class="mt-2">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="metal-percent" class="h-full bg-gray-600" style="width: 25%"></div>
+                                        </div>
+                                        <div id="metal-value" class="text-sm mt-1 text-neutral/70">25%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-neutral/5 rounded-lg p-3 text-center">
+                                    <div class="text-blue-600 font-medium">水</div>
+                                    <div class="mt-2">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="water-percent" class="h-full bg-blue-600" style="width: 15%"></div>
+                                        </div>
+                                        <div id="water-value" class="text-sm mt-1 text-neutral/70">15%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="five-elements-analysis" class="mt-4 text-neutral/80">
+                                您的八字中五行分布较为均衡，土元素稍旺，火元素较弱。
+                            </div>
+                        </div>
+                        
+                        <!-- 十神解析 -->
+                        <div>
+                            <h3 class="text-xl font-medium text-neutral/80 mb-4">十神解析</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">柱位</th>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">天干</th>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">十神</th>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">地支</th>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">藏干</th>
+                                            <th class="px-4 py-3 bg-neutral/5 text-left text-xs font-medium text-neutral/70 uppercase tracking-wider">十神</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200" id="shishen-table">
+                                        <!-- 十神数据将通过JS填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- 命局总结 -->
+                        <div>
+                            <h3 class="text-xl font-medium text-neutral/80 mb-4">命局总结</h3>
+                            <div id="bazi-summary" class="bg-primary/5 p-4 rounded-lg border border-primary/10 text-neutral/80 leading-relaxed">
+                                您的八字为甲子、丙寅、戊辰、庚申。日主为戊土，生于寅月，寅木为戊土七杀，月干透丙火正印，年柱甲子，子水为偏财，时柱庚申为食神。整体格局为杀印相生，身弱喜火土帮扶...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 保存和分享 -->
+                <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                    <button id="save-result" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg shadow transition-all-300 flex items-center justify-center">
+                        <i class="fa fa-download mr-2"></i>保存结果
+                    </button>
+                    <button id="share-result" class="bg-accent hover:bg-accent/90 text-white font-medium py-2 px-6 rounded-lg shadow transition-all-300 flex items-center justify-center">
+                        <i class="fa fa-share-alt mr-2"></i>分享结果
+                    </button>
+                    <button id="print-result" class="bg-neutral hover:bg-neutral/90 text-white font-medium py-2 px-6 rounded-lg shadow transition-all-300 flex items-center justify-center">
+                        <i class="fa fa-print mr-2"></i>打印结果
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- 信息模态框 -->
+    <div id="info-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-serif font-semibold text-primary">什么是生辰八字？</h3>
+                <button id="close-modal" class="text-neutral/50 hover:text-neutral">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-neutral/80">
+                <p>生辰八字，简称八字，是指一个人出生时的干支历日期。由年、月、日、时四柱组成，每柱由一个天干和一个地支组成，共八个字，故称"八字"。</p>
+                
+                <p>生辰八字以天干地支为基础，天干有十个：甲、乙、丙、丁、戊、己、庚、辛、壬、癸；地支有十二个：子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥。</p>
+                
+                <div class="bg-primary/5 p-4 rounded-lg border border-primary/10">
+                    <h4 class="font-medium text-primary mb-2">四柱解析</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>年柱</strong>：以立春为分界，代表祖上、父母、根气</li>
+                        <li><strong>月柱</strong>：以节气为分界，代表兄弟、朋友、提纲</li>
+                        <li><strong>日柱</strong>：代表自己，是八字的核心</li>
+                        <li><strong>时柱</strong>：代表子女、晚年、结果</li>
+                    </ul>
+                </div>
+                
+                <p>生辰八字是中国传统命理学的基础，通过分析八字中天干地支的五行生克关系，可以解读一个人的性格、运势、健康等信息。</p>
+                
+                <p>本计算器仅供参考，八字命理是传统文化的一部分，其结果不应作为人生决策的唯一依据。</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-neutral text-white/80 py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-lg font-serif font-medium mb-2">生辰八字计算器</h3>
+                    <p class="text-sm text-white/60">传统命理 · 文化传承</p>
+                </div>
+                <div class="text-sm text-white/60 text-center md:text-right">
+                    <p>© 2023 生辰八字计算器 | 仅供参考，理性看待</p>
+                    <p class="mt-1">本工具不构成任何人生指导建议</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 天干地支数据
+        const tiangan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const dizhi = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        const wuxing = {
+            '甲': '木', '乙': '木',
+            '丙': '火', '丁': '火',
+            '戊': '土', '己': '土',
+            '庚': '金', '辛': '金',
+            '壬': '水', '癸': '水',
+            '子': '水', '亥': '水',
+            '寅': '木', '卯': '木',
+            '巳': '火', '午': '火',
+            '申': '金', '酉': '金',
+            '丑': '土', '辰': '土', '未': '土', '戌': '土'
+        };
+        
+        // 藏干数据
+        const canggan = {
+            '子': ['癸'],
+            '丑': ['己', '辛', '癸'],
+            '寅': ['甲', '丙', '戊'],
+            '卯': ['乙'],
+            '辰': ['戊', '乙', '癸'],
+            '巳': ['丙', '庚', '戊'],
+            '午': ['丁', '己'],
+            '未': ['己', '丁', '乙'],
+            '申': ['庚', '壬', '戊'],
+            '酉': ['辛'],
+            '戌': ['戊', '辛', '丁'],
+            '亥': ['壬', '甲']
+        };
+        
+        // 十神对应关系 (以日主为中心)
+        const shishen = {
+            '比肩': [], '劫财': [],
+            '食神': [], '伤官': [],
+            '正财': [], '偏财': [],
+            '正官': [], '七杀': [],
+            '正印': [], '偏印': []
+        };
+        
+        // 初始化十神关系 (以日主为中心)
+        function initShishen(dayTG) {
+            const index = tiangan.indexOf(dayTG);
+            if (index === -1) return;
+            
+            // 比肩: 同阳同阴
+            shishen['比肩'] = [tiangan[index]];
+            
+            // 劫财: 同五行不同阴阳
+            const jieCaiIndex = (index % 2 === 0) ? index + 1 : index - 1;
+            shishen['劫财'] = [tiangan[jieCaiIndex]];
+            
+            // 食神: 我生且阴阳相同
+            let shiShenIndex = (index + 3) % 10;
+            if (shiShenIndex < 0) shiShenIndex += 10;
+            shishen['食神'] = [tiangan[shiShenIndex]];
+            
+            // 伤官: 我生且阴阳不同
+            let shangGuanIndex = (index + 4) % 10;
+            if (shangGuanIndex < 0) shangGuanIndex += 10;
+            shishen['伤官'] = [tiangan[shangGuanIndex]];
+            
+            // 正财: 我克且阴阳不同
+            let zhengCaiIndex = (index + 5) % 10;
+            if (zhengCaiIndex < 0) zhengCaiIndex += 10;
+            shishen['正财'] = [tiangan[zhengCaiIndex]];
+            
+            // 偏财: 我克且阴阳相同
+            let pianCaiIndex = (index + 6) % 10;
+            if (pianCaiIndex < 0) pianCaiIndex += 10;
+            shishen['偏财'] = [tiangan[pianCaiIndex]];
+            
+            // 正官: 克我且阴阳不同
+            let zhengGuanIndex = (index + 7) % 10;
+            if (zhengGuanIndex < 0) zhengGuanIndex += 10;
+            shishen['正官'] = [tiangan[zhengGuanIndex]];
+            
+            // 七杀: 克我且阴阳相同
+            let qiShaIndex = (index + 8) % 10;
+            if (qiShaIndex < 0) qiShaIndex += 10;
+            shishen['七杀'] = [tiangan[qiShaIndex]];
+            
+            // 正印: 生我且阴阳不同
+            let zhengYinIndex = (index + 9) % 10;
+            if (zhengYinIndex < 0) zhengYinIndex += 10;
+            shishen['正印'] = [tiangan[zhengYinIndex]];
+            
+            // 偏印: 生我且阴阳相同
+            let pianYinIndex = (index + 10) % 10;
+            if (pianYinIndex < 0) pianYinIndex += 10;
+            shishen['偏印'] = [tiangan[pianYinIndex]];
+        }
+        
+        // 获取十神名称
+        function getShishenName(tg, dayTG) {
+            initShishen(dayTG);
+            
+            for (const [name, tgs] of Object.entries(shishen)) {
+                if (tgs.includes(tg)) {
+                    return name;
+                }
+            }
+            return '';
+        }
+        
+        // 计算生辰八字的核心函数
+        function calculateBazi(date, time, useSolarTime = true, place = '') {
+            // 这里是简化的计算逻辑，实际应用中需要更复杂的算法
+            // 包括节气计算、真太阳时转换等
+            
+            // 生成随机八字用于演示 (实际应用中需要替换为真实算法)
+            const yearTG = tiangan[Math.floor(Math.random() * 10)];
+            const yearDZ = dizhi[Math.floor(Math.random() * 12)];
+            
+            const monthTG = tiangan[Math.floor(Math.random() * 10)];
+            const monthDZ = dizhi[Math.floor(Math.random() * 12)];
+            
+            const dayTG = tiangan[Math.floor(Math.random() * 10)];
+            const dayDZ = dizhi[Math.floor(Math.random() * 12)];
+            
+            const hourTG = tiangan[Math.floor(Math.random() * 10)];
+            const hourDZ = dizhi[Math.floor(Math.random() * 12)];
+            
+            // 计算五行分布 (简化版)
+            const elements = {
+                '木': 0, '火': 0, '土': 0, '金': 0, '水': 0
+            };
+            
+            // 统计天干五行
+            [yearTG, monthTG, dayTG, hourTG].forEach(tg => {
+                elements[wuxing[tg]]++;
+            });
+            
+            // 统计地支五行
+            [yearDZ, monthDZ, dayDZ, hourDZ].forEach(dz => {
+                elements[wuxing[dz]]++;
+            });
+            
+            // 计算百分比
+            const total = Object.values(elements).reduce((a, b) => a + b, 0);
+            Object.keys(elements).forEach(key => {
+                elements[key] = Math.round((elements[key] / total) * 100);
+            });
+            
+            return {
+                year: { tg: yearTG, dz: yearDZ, pillar: yearTG + yearDZ },
+                month: { tg: monthTG, dz: monthDZ, pillar: monthTG + monthDZ },
+                day: { tg: dayTG, dz: dayDZ, pillar: dayTG + dayDZ },
+                hour: { tg: hourTG, dz: hourDZ, pillar: hourTG + hourDZ },
+                elements: elements,
+                dayTG: dayTG,
+                // 模拟其他数据
+                lunar: "壬寅年三月初五",
+                yearTerm: "立春后",
+                monthTerm: "清明后",
+                solarTime: useSolarTime ? time : "未启用"
+            };
+        }
+        
+        // 显示结果
+        function displayResult(bazi, formData) {
+            // 填充四柱信息
+            document.getElementById('year-pillar').textContent = bazi.year.pillar;
+            document.getElementById('year-tiangan').textContent = bazi.year.tg;
+            document.getElementById('year-dizhi').textContent = bazi.year.dz;
+            
+            document.getElementById('month-pillar').textContent = bazi.month.pillar;
+            document.getElementById('month-tiangan').textContent = bazi.month.tg;
+            document.getElementById('month-dizhi').textContent = bazi.month.dz;
+            
+            document.getElementById('day-pillar').textContent = bazi.day.pillar;
+            document.getElementById('day-tiangan').textContent = bazi.day.tg;
+            document.getElementById('day-dizhi').textContent = bazi.day.dz;
+            
+            document.getElementById('hour-pillar').textContent = bazi.hour.pillar;
+            document.getElementById('hour-tiangan').textContent = bazi.hour.tg;
+            document.getElementById('hour-dizhi').textContent = bazi.hour.dz;
+            
+            // 填充基本信息
+            document.getElementById('result-date').textContent = formData.date;
+            document.getElementById('result-time').textContent = formData.time;
+            document.getElementById('result-place').textContent = formData.place || '未填写';
+            document.getElementById('result-lunar').textContent = bazi.lunar;
+            document.getElementById('result-year-term').textContent = bazi.yearTerm;
+            document.getElementById('result-month-term').textContent = bazi.monthTerm;
+            document.getElementById('result-solar-time').textContent = bazi.solarTime;
+            
+            // 填充五行分布
+            document.getElementById('wood-percent').style.width = `${bazi.elements.木}%`;
+            document.getElementById('wood-value').textContent = `${bazi.elements.木}%`;
+            
+            document.getElementById('fire-percent').style.width = `${bazi.elements.火}%`;
+            document.getElementById('fire-value').textContent = `${bazi.elements.火}%`;
+            
+            document.getElementById('earth-percent').style.width = `${bazi.elements.土}%`;
+            document.getElementById('earth-value').textContent = `${bazi.elements.土}%`;
+            
+            document.getElementById('metal-percent').style.width = `${bazi.elements.金}%`;
+            document.getElementById('metal-value').textContent = `${bazi.elements.金}%`;
+            
+            document.getElementById('water-percent').style.width = `${bazi.elements.水}%`;
+            document.getElementById('water-value').textContent = `${bazi.elements.水}%`;
+            
+            // 生成十神表格
+            const shishenTable = document.getElementById('shishen-table');
+            shishenTable.innerHTML = '';
+            
+            // 四柱数据
+            const pillars = [
+                { name: '年柱', tg: bazi.year.tg, dz: bazi.year.dz },
+                { name: '月柱', tg: bazi.month.tg, dz: bazi.month.dz },
+                { name: '日柱', tg: bazi.day.tg, dz: bazi.day.dz },
+                { name: '时柱', tg: bazi.hour.tg, dz: bazi.hour.dz }
+            ];
+            
+            pillars.forEach(pillar => {
+                const row = document.createElement('tr');
+                
+                // 柱位
+                const pillarCell = document.createElement('td');
+                pillarCell.className = 'px-4 py-3 whitespace-nowrap';
+                pillarCell.textContent = pillar.name;
+                row.appendChild(pillarCell);
+                
+                // 天干
+                const tgCell = document.createElement('td');
+                tgCell.className = 'px-4 py-3 whitespace-nowrap';
+                tgCell.textContent = pillar.tg;
+                row.appendChild(tgCell);
+                
+                // 十神
+                const ssCell = document.createElement('td');
+                ssCell.className = 'px-4 py-3 whitespace-nowrap';
+                ssCell.textContent = getShishenName(pillar.tg, bazi.dayTG);
+                row.appendChild(ssCell);
+                
+                // 地支
+                const dzCell = document.createElement('td');
+                dzCell.className = 'px-4 py-3 whitespace-nowrap';
+                dzCell.textContent = pillar.dz;
+                row.appendChild(dzCell);
+                
+                // 藏干
+                const cangganCell = document.createElement('td');
+                cangganCell.className = 'px-4 py-3';
+                cangganCell.textContent = canggan[pillar.dz].join('、');
+                row.appendChild(cangganCell);
+                
+                // 藏干十神
+                const cangganSsCell = document.createElement('td');
+                cangganSsCell.className = 'px-4 py-3';
+                cangganSsCell.textContent = canggan[pillar.dz].map(tg => getShishenName(tg, bazi.dayTG)).join('、');
+                row.appendChild(cangganSsCell);
+                
+                shishenTable.appendChild(row);
+            });
+            
+            // 显示结果区域
+            document.getElementById('result-section').classList.remove('hidden');
+            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认日期为今天
+            const today = new Date();
+            const defaultDate = today.toISOString().split('T')[0];
+            document.getElementById('birth-date').value = defaultDate;
+            
+            // 设置默认时间为当前时间
+            const hours = String(today.getHours()).padStart(2, '0');
+            const minutes = String(today.getMinutes()).padStart(2, '0');
+            document.getElementById('birth-time').value = `${hours}:${minutes}`;
+            
+            // 表单提交事件
+            document.getElementById('bazi-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 获取表单数据
+                const birthDate = document.getElementById('birth-date').value;
+                const birthTime = document.getElementById('birth-time').value;
+                const birthPlace = document.getElementById('birth-place').value;
+                const useSolarTime = document.getElementById('solar-time').checked;
+                
+                // 格式化日期时间显示
+                const formattedDate = new Date(birthDate).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                // 计算八字
+                const bazi = calculateBazi(birthDate, birthTime, useSolarTime, birthPlace);
+                
+                // 显示结果
+                displayResult(bazi, {
+                    date: formattedDate,
+                    time: birthTime,
+                    place: birthPlace
+                });
+            });
+            
+            // 信息模态框控制
+            const infoModal = document.getElementById('info-modal');
+            document.getElementById('info-btn').addEventListener('click', function() {
+                infoModal.classList.remove('hidden');
+                infoModal.classList.add('flex');
+            });
+            
+            document.getElementById('close-modal').addEventListener('click', function() {
+                infoModal.classList.add('hidden');
+                infoModal.classList.remove('flex');
+            });
+            
+            // 点击模态框外部关闭
+            infoModal.addEventListener('click', function(e) {
+                if (e.target === infoModal) {
+                    infoModal.classList.add('hidden');
+                    infoModal.classList.remove('flex');
+                }
+            });
+            
+            // 结果操作按钮
+            document.getElementById('save-result').addEventListener('click', function() {
+                alert('结果已保存到本地（模拟操作）');
+            });
+            
+            document.getElementById('share-result').addEventListener('click', function() {
+                alert('分享功能已触发（模拟操作）');
+            });
+            
+            document.getElementById('print-result').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // 主题切换（简单实现）
+            let darkMode = false;
+            document.getElementById('theme-toggle').addEventListener('click', function() {
+                darkMode = !darkMode;
+                const icon = this.querySelector('i');
+                
+                if (darkMode) {
+                    document.body.classList.add('bg-neutral', 'text-light');
+                    document.body.classList.remove('bg-light', 'text-neutral');
+                    icon.classList.remove('fa-moon-o');
+                    icon.classList.add('fa-sun-o');
+                } else {
+                    document.body.classList.remove('bg-neutral', 'text-light');
+                    document.body.classList.add('bg-light', 'text-neutral');
+                    icon.classList.remove('fa-sun-o');
+                    icon.classList.add('fa-moon-o');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
